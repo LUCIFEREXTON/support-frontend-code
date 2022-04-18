@@ -1,25 +1,34 @@
-import logo from './logo.svg';
-import './App.css';
+import './App.css'
+import MainPage from './Screen/MainPage.jsx'
+import axios from 'axios'
+import { BrowserRouter as Router} from "react-router-dom"
+import React, {useEffect, useState} from 'react'
+import { useDispatch } from 'react-redux'
+import Inputs from './Components/Tickets/Inputs'
+import Spinner from './Components/Spinner'
 
-function App() {
+function App(){
+	const [route, setRoute] = useState(false)
+	const dispatch = useDispatch()
+	useEffect(()=>{
+		(async ()=>{
+			try {
+				const res = await axios.get('/ticket/init_settings')
+				const {per_page, route, tickets_per_request} = res.data
+				dispatch({type: 'SET_PER_PAGE', per_page, tickets_per_request})
+				setRoute(route)
+			} catch (e) {
+				console.log(e)
+				dispatch({type:'ERROR', error: e.response.data.message})
+			}
+		})()
+	}, [dispatch])
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+		route ? 
+		<Router basename={route}>
+			<MainPage/>
+		</Router>: <Spinner/>
+	);
 }
 
 export default App;
